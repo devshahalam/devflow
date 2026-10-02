@@ -1,0 +1,6 @@
+{
+  "name": "DevFlow Freelance CRM",
+  "description": "Simple, powerful Client CRM and Sales Management Web App for freelance web developers to track leads, follow-ups, proposals, projects, and payments.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
