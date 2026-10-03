@@ -31,7 +31,7 @@ import { db } from '../services/firebase';
 import { collection, doc, getDocs, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 
 interface CRMContextType {
-  currentUser: AppUser;
+  currentUser: AppUser | null;
   logout: () => void;
   login: (email: string, pass: string) => boolean;
 
@@ -182,13 +182,19 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [actionNotice, setActionNotice] = useState<string | null>(null);
 
   // Single Owner Authentication
-  const [currentUser, setCurrentUser] = useState<AppUser>({
-    id: 'USR-01',
-    name: 'Md Shah Alam',
-    email: 'dev.mdshahalam@gmail.com',
-    password: 'Anas@2026',
-    role: 'Owner',
-    createdAt: new Date().toISOString(),
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(() => {
+    const saved = localStorage.getItem('devflow_logged_in');
+    if (saved === 'true') {
+      return {
+        id: 'USR-01',
+        name: 'Md Shah Alam',
+        email: 'dev.mdshahalam@gmail.com',
+        password: 'Anas@2026',
+        role: 'Owner',
+        createdAt: new Date().toISOString(),
+      };
+    }
+    return null;
   });
 
   // Entities state
@@ -203,36 +209,6 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [profile, setProfile] = useState<FreelancerProfile>(initialProfile);
 
   const [isLoaded, setIsLoaded] = useState(false);
-
-  // Auto-clear demo documents from Firestore on startup
-  useEffect(() => {
-    const clearDemo = async () => {
-      try {
-        const collectionsToClear = ['leads', 'clients', 'projects', 'payments', 'proposals', 'communications', 'followUps'];
-        for (const colName of collectionsToClear) {
-          const snap = await getDocs(collection(db, colName));
-          snap.forEach(async (d) => {
-            const id = d.id;
-            if (
-              id.startsWith('LEAD-0') ||
-              id.startsWith('CLI-0') ||
-              id.startsWith('PRJ-10') ||
-              id.startsWith('PAY-0') ||
-              id.startsWith('PROP-0') ||
-              id.startsWith('COM-0') ||
-              id.startsWith('FLP-0') ||
-              id === 'LEAD-BD-01'
-            ) {
-              await deleteDoc(doc(db, colName, id));
-            }
-          });
-        }
-      } catch (e) {
-        console.error('Error clearing demo data:', e);
-      }
-    };
-    clearDemo();
-  }, []);
 
   // Firestore Real-time Sync (onSnapshot) across devices
   useEffect(() => {
@@ -310,13 +286,15 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         role: 'Owner',
         createdAt: new Date().toISOString(),
       });
+      localStorage.setItem('devflow_logged_in', 'true');
       return true;
     }
     return false;
   };
 
   const logout = () => {
-    // Keep user logged in or switch back to owner
+    setCurrentUser(null);
+    localStorage.removeItem('devflow_logged_in');
   };
 
   // Currency helper
@@ -884,9 +862,16 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         importDataJSON,
         kpis,
         isOwner,
-        users: [currentUser],
-        assignableUsers: [currentUser],
-        addUser: () => currentUser,
+        users: currentUser ? [currentUser] : [],
+        assignableUsers: currentUser ? [currentUser] : [],
+        addUser: () => currentUser || {
+          id: 'USR-01',
+          name: 'Md Shah Alam',
+          email: 'dev.mdshahalam@gmail.com',
+          password: 'Anas@2026',
+          role: 'Owner',
+          createdAt: new Date().toISOString(),
+        },
         updateUser: () => {},
         deleteUser: () => true,
         getProjectFinancials,

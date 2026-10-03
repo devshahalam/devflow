@@ -28,14 +28,11 @@ export const QuickAddLeadModal: React.FC = () => {
     services,
     profile,
     setSelectedLeadId,
-    assignableUsers,
-    currentUser,
   } = useCRM();
 
   // Basic required fields
   const [businessName, setBusinessName] = useState('');
   const [contactPerson, setContactPerson] = useState('');
-  const [assignedTo, setAssignedTo] = useState<string>(currentUser?.id || 'USR-01');
   const [serviceId, setServiceId] = useState(services[0]?.id || 'SRV-01');
   const [leadSource, setLeadSource] = useState<LeadSource>('Google Maps'); // Default to Google Maps!
   const [dealValue, setDealValue] = useState<string>(''); // Can be skipped / empty initially!
@@ -61,6 +58,21 @@ export const QuickAddLeadModal: React.FC = () => {
   const [city, setCity] = useState('');
   const [notes, setNotes] = useState('');
   const [contactMethod, setContactMethod] = useState<ContactMethod>('Email');
+
+  const resetForm = () => {
+    setBusinessName('');
+    setContactPerson('');
+    setDealValue('');
+    setWhatsapp('');
+    setEmail('');
+    setWebsite('');
+    setFacebook('');
+    setInstagram('');
+    setTwitter('');
+    setBusinessCategory('');
+    setCity('');
+    setNotes('');
+  };
 
   if (!isQuickAddOpen) return null;
 
@@ -92,10 +104,11 @@ export const QuickAddLeadModal: React.FC = () => {
       nextFollowUpDate: nextFollowUpDate || undefined,
       contactMethod,
       notes: notes.trim(),
-      assignedTo: assignedTo || currentUser?.id || 'USR-01',
+      assignedTo: 'USR-01',
       clientId: null,
     });
 
+    resetForm();
     setIsQuickAddOpen(false);
     setSelectedLeadId(createdLead.id);
   };
@@ -214,23 +227,6 @@ export const QuickAddLeadModal: React.FC = () => {
                 <option value="Medium">Medium</option>
                 <option value="High">High</option>
                 <option value="Urgent">Urgent</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700">
-                Assign To Team Member
-              </label>
-              <select
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:outline-hidden"
-                value={assignedTo}
-                onChange={(e) => setAssignedTo(e.target.value)}
-              >
-                {assignableUsers.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name} ({u.role})
-                  </option>
-                ))}
               </select>
             </div>
           </div>

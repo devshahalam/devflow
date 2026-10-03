@@ -54,8 +54,6 @@ export const LeadDetailModal: React.FC = () => {
     setCurrentTab,
     setSelectedClientId,
     formatCurrency,
-    assignableUsers,
-    users,
     currentUser,
   } = useCRM();
 
@@ -256,23 +254,6 @@ export const LeadDetailModal: React.FC = () => {
                     ? formatCurrency(lead.dealValue, lead.currency)
                     : 'To be discussed'}
                 </span>
-              </div>
-
-              {/* Assigned Team Member */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-medium text-slate-500">Assigned:</span>
-                <select
-                  value={lead.assignedTo || ''}
-                  onChange={(e) => updateLead(lead.id, { assignedTo: e.target.value })}
-                  className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-800 shadow-2xs focus:border-blue-600 focus:outline-hidden"
-                >
-                  <option value="">Unassigned</option>
-                  {assignableUsers.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name} ({u.role})
-                    </option>
-                  ))}
-                </select>
               </div>
             </div>
 

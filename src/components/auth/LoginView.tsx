@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Lock, Mail, Eye, EyeOff, ShieldCheck, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
 import { useCRM } from '../../context/CRMContext';
 
 export const LoginView: React.FC = () => {
   const { login } = useCRM();
 
-  const [email, setEmail] = useState('dev.mdshahalam@gmail.com');
-  const [password, setPassword] = useState('Anas@2026');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -23,24 +23,6 @@ export const LoginView: React.FC = () => {
         setErrorMsg('Invalid email or password. Please verify credentials.');
       }
     }, 200);
-  };
-
-  const handleFillOwnerCredentials = () => {
-    setEmail('dev.mdshahalam@gmail.com');
-    setPassword('Anas@2026');
-    setErrorMsg('');
-  };
-
-  const handleFillLeaderCredentials = () => {
-    setEmail('tanvir.leader@alamdigital.com');
-    setPassword('Leader@2026');
-    setErrorMsg('');
-  };
-
-  const handleFillMemberCredentials = () => {
-    setEmail('rakib.dev@alamdigital.com');
-    setPassword('Rakib@2026');
-    setErrorMsg('');
   };
 
   return (
@@ -128,48 +110,6 @@ export const LoginView: React.FC = () => {
             )}
           </button>
         </form>
-
-        {/* Quick Demo Credentials Assistant */}
-        <div className="mt-6 pt-5 border-t border-slate-800/80 space-y-2">
-          <div className="flex items-center justify-between text-[11px] text-slate-400">
-            <span className="flex items-center gap-1 font-medium text-slate-300">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-              Preset Studio Accounts:
-            </span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 pt-1">
-            <button
-              type="button"
-              onClick={handleFillOwnerCredentials}
-              className="text-left rounded-lg border border-slate-800 bg-slate-800/40 p-2 hover:bg-slate-800 hover:border-slate-700 transition-colors"
-            >
-              <div className="font-semibold text-[11px] text-white">Owner</div>
-              <div className="text-[10px] text-purple-400 truncate">dev.mdshahalam...</div>
-              <div className="text-[9px] text-slate-500 font-mono">Anas@2026</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleFillLeaderCredentials}
-              className="text-left rounded-lg border border-slate-800 bg-slate-800/40 p-2 hover:bg-slate-800 hover:border-slate-700 transition-colors"
-            >
-              <div className="font-semibold text-[11px] text-white">Team Leader</div>
-              <div className="text-[10px] text-amber-400 truncate">tanvir.leader...</div>
-              <div className="text-[9px] text-slate-500 font-mono">Leader@2026</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleFillMemberCredentials}
-              className="text-left rounded-lg border border-slate-800 bg-slate-800/40 p-2 hover:bg-slate-800 hover:border-slate-700 transition-colors"
-            >
-              <div className="font-semibold text-[11px] text-white">Member</div>
-              <div className="text-[10px] text-blue-400 truncate">rakib.dev...</div>
-              <div className="text-[9px] text-slate-500 font-mono">Rakib@2026</div>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

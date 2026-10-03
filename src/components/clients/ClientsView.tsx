@@ -129,8 +129,17 @@ export const ClientsView: React.FC = () => {
 
     setIsAddClientOpen(false);
     setBusinessName('');
+    setContactPerson('');
+    setBusinessCategory('');
     setEmail('');
     setWhatsapp('');
+    setWebsite('');
+    setFacebook('');
+    setInstagram('');
+    setTwitter('');
+    setCountry('United States');
+    setCity('');
+    setNotes('');
   };
 
   const handleOpenAddProjectForClient = (client: Client) => {
@@ -139,6 +148,7 @@ export const ClientsView: React.FC = () => {
     const clientCurr = client.currency || 'USD';
     setCurrency(clientCurr);
     setProjectValue(clientCurr === 'BDT' ? 35000 : 1000);
+    setProjectNotes('');
   };
 
   const handleCreateProjectForClient = (e: React.FormEvent) => {
@@ -162,6 +172,7 @@ export const ClientsView: React.FC = () => {
     });
 
     setClientForNewProject(null);
+    setProjectName('');
     setProjectNotes('');
   };
 
@@ -169,6 +180,7 @@ export const ClientsView: React.FC = () => {
     const fin = getProjectFinancials(project.id);
     setProjectForPayment(project);
     setPayAmount(fin.pending > 0 ? fin.pending : fin.value);
+    setPayNotes('');
   };
 
   const handleRecordProjectPayment = (e: React.FormEvent) => {
@@ -189,6 +201,7 @@ export const ClientsView: React.FC = () => {
     });
 
     setProjectForPayment(null);
+    setPayAmount(0);
     setPayNotes('');
   };
 

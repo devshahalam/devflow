@@ -30,7 +30,6 @@ export const ProjectsView: React.FC = () => {
     profile,
     setCurrentTab,
     setSelectedClientId,
-    assignableUsers,
     currentUser,
   } = useCRM();
 
@@ -42,7 +41,6 @@ export const ProjectsView: React.FC = () => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [selectedClientId, setModalClientId] = useState(clients[0]?.id || '');
   const [projectName, setProjectName] = useState('');
-  const [assignedTo, setAssignedTo] = useState(currentUser?.id || 'USR-01');
   const [serviceId, setServiceId] = useState(services[0]?.id || 'SRV-01');
   const [projectValue, setProjectValue] = useState<number>(1000);
   const [startDate, setStartDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -94,7 +92,7 @@ export const ProjectsView: React.FC = () => {
       startDate,
       deadline,
       status,
-      assignedTo: assignedTo || currentUser?.id || 'USR-01',
+      assignedTo: 'USR-01',
       notes: notes.trim(),
     });
 
@@ -448,23 +446,6 @@ export const ProjectsView: React.FC = () => {
                     onChange={(e) => setDeadline(e.target.value)}
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700">
-                  Assign To Team Member
-                </label>
-                <select
-                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900"
-                  value={assignedTo}
-                  onChange={(e) => setAssignedTo(e.target.value)}
-                >
-                  {assignableUsers.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name} ({u.role})
-                    </option>
-                  ))}
-                </select>
               </div>
 
               <div>
