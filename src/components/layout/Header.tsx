@@ -38,10 +38,6 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [copiedExport, setCopiedExport] = useState(false);
 
-  const isOwner =
-    currentUser?.role === 'Owner' ||
-    currentUser?.email?.toLowerCase() === 'dev.mdshahalam@gmail.com';
-
   const getPageTitle = (tab: string) => {
     switch (tab) {
       case 'dashboard':
@@ -64,10 +60,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
         return 'Services & Packages';
       case 'reports':
         return 'Sales & Performance Reports';
-      case 'team':
-        return 'Team & Staff Management';
       case 'settings':
-        return isOwner ? 'Studio & Team Settings' : 'My Account & Profile';
+        return 'Studio Settings';
       default:
         return 'Dashboard';
     }
@@ -197,25 +191,23 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                   className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
                 >
                   <Settings className="h-3.5 w-3.5 text-slate-400" />
-                  <span>{isOwner ? 'Studio Settings & Roles' : 'My Profile & Account'}</span>
+                  <span>Studio Settings</span>
                 </button>
 
-                {isOwner && (
-                  <button
-                    onClick={() => {
-                      handleExportData();
-                      setIsProfileMenuOpen(false);
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
-                  >
-                    {copiedExport ? (
-                      <Check className="h-3.5 w-3.5 text-emerald-500" />
-                    ) : (
-                      <Download className="h-3.5 w-3.5 text-slate-400" />
-                    )}
-                    <span>Export JSON Backup</span>
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    handleExportData();
+                    setIsProfileMenuOpen(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
+                >
+                  {copiedExport ? (
+                    <Check className="h-3.5 w-3.5 text-emerald-500" />
+                  ) : (
+                    <Download className="h-3.5 w-3.5 text-slate-400" />
+                  )}
+                  <span>Export JSON Backup</span>
+                </button>
 
                 <div className="my-1 border-t border-slate-100" />
                 <button

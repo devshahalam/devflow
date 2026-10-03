@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useCRM } from '../../context/CRMContext';
 import { Proposal, ProposalStatus } from '../../types/crm';
+import { ConfirmModal } from '../common/ConfirmModal';
 
 export const ProposalsView: React.FC = () => {
   const {
@@ -37,6 +38,7 @@ export const ProposalsView: React.FC = () => {
 
   // New Proposal Modal
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [proposalToDelete, setProposalToDelete] = useState<Proposal | null>(null);
   const [selectedLeadId, setModalLeadId] = useState(leads[0]?.id || '');
   const [title, setTitle] = useState('');
   const [serviceId, setServiceId] = useState(services[0]?.id || 'SRV-01');
@@ -250,13 +252,9 @@ export const ProposalsView: React.FC = () => {
 
                   {currentUser?.role === 'Owner' && (
                     <button
-                      onClick={() => {
-                        if (confirm(`Delete proposal "${prop.title}"?`)) {
-                          deleteProposal(prop.id);
-                        }
-                      }}
+                      onClick={() => setProposalToDelete(prop)}
                       className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                      title="Delete Proposal (Owner only)"
+                      title="Delete Proposal"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -267,6 +265,16 @@ export const ProposalsView: React.FC = () => {
           );
         })}
       </div>
+
+      <ConfirmModal
+        isOpen={!!proposalToDelete}
+        title="Delete Proposal"
+        message={`Are you sure you want to delete proposal "${proposalToDelete?.title}"?`}
+        onConfirm={() => {
+          if (proposalToDelete) deleteProposal(proposalToDelete.id);
+        }}
+        onClose={() => setProposalToDelete(null)}
+      />
 
       {/* Create Proposal Modal */}
       {isAddOpen && (

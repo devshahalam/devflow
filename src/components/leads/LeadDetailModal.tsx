@@ -496,9 +496,9 @@ export const LeadDetailModal: React.FC = () => {
                           <p className="mt-1 text-xs text-slate-600 leading-relaxed">
                             {evt.description}
                           </p>
-                          {evt.amount && (
+                          {(evt as any).amount && (
                             <div className="mt-2 text-xs font-semibold text-emerald-600">
-                              {formatCurrency(evt.amount, evt.currency || lead.currency)}
+                              {formatCurrency((evt as any).amount, (evt as any).currency || lead.currency)}
                             </div>
                           )}
                         </div>

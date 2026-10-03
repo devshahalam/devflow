@@ -15,7 +15,8 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useCRM } from '../../context/CRMContext';
-import { ContactMethod, MessageType } from '../../types/crm';
+import { ContactMethod, MessageType, Communication } from '../../types/crm';
+import { ConfirmModal } from '../common/ConfirmModal';
 
 export const CommunicationsView: React.FC = () => {
   const {
@@ -31,6 +32,7 @@ export const CommunicationsView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [methodFilter, setMethodFilter] = useState<string>('All');
   const [typeFilter, setTypeFilter] = useState<string>('All');
+  const [commToDelete, setCommToDelete] = useState<Communication | null>(null);
 
   // Modal for new interaction
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -216,13 +218,9 @@ export const CommunicationsView: React.FC = () => {
                     </span>
                     {currentUser?.role === 'Owner' && (
                       <button
-                        onClick={() => {
-                          if (confirm(`Delete communication record?`)) {
-                            deleteCommunication(comm.id);
-                          }
-                        }}
+                        onClick={() => setCommToDelete(comm)}
                         className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                        title="Delete Communication (Owner only)"
+                        title="Delete Communication"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -380,6 +378,16 @@ export const CommunicationsView: React.FC = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={!!commToDelete}
+        title="Delete Communication Log"
+        message="Are you sure you want to delete this communication interaction record?"
+        onConfirm={() => {
+          if (commToDelete) deleteCommunication(commToDelete.id);
+        }}
+        onClose={() => setCommToDelete(null)}
+      />
     </div>
   );
 };

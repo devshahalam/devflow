@@ -30,13 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     profile,
     setIsQuickAddOpen,
     formatCurrency,
-    currentUser,
-    users,
   } = useCRM();
-
-  const isOwner =
-    currentUser?.role === 'Owner' ||
-    currentUser?.email?.toLowerCase() === 'dev.mdshahalam@gmail.com';
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -84,23 +78,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       badgeColor: 'bg-emerald-50 text-emerald-700 border border-emerald-200/50',
     },
     { id: 'clients', label: 'Clients', icon: UserCheck },
-    ...(isOwner
-      ? [
-          {
-            id: 'team',
-            label: 'Team & Staff',
-            icon: Users2,
-            badge: users.length > 1 ? `${users.length}` : undefined,
-            badgeColor: 'bg-indigo-100 text-indigo-700',
-          },
-        ]
-      : []),
     { id: 'services', label: 'Services', icon: Layers },
     { id: 'reports', label: 'Reports', icon: BarChart3 },
     {
       id: 'settings',
-      label: isOwner ? 'Studio Settings' : 'My Profile',
-      icon: isOwner ? Settings : UserCheck,
+      label: 'Studio Settings',
+      icon: Settings,
     },
   ];
 

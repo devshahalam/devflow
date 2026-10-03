@@ -24,7 +24,6 @@ import { ClientsView } from './components/clients/ClientsView';
 import { ServicesView } from './components/services/ServicesView';
 import { ReportsView } from './components/reports/ReportsView';
 import { SettingsView } from './components/settings/SettingsView';
-import { TeamView } from './components/team/TeamView';
 
 const MainAppContent: React.FC = () => {
   const { currentTab, currentUser } = useCRM();
@@ -53,8 +52,6 @@ const MainAppContent: React.FC = () => {
         return <PaymentsView />;
       case 'clients':
         return <ClientsView />;
-      case 'team':
-        return <TeamView />;
       case 'services':
         return <ServicesView />;
       case 'reports':
