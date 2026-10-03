@@ -26,7 +26,7 @@ import { ReportsView } from './components/reports/ReportsView';
 import { SettingsView } from './components/settings/SettingsView';
 
 const MainAppContent: React.FC = () => {
-  const { currentTab, currentUser } = useCRM();
+  const { currentTab, currentUser, actionNotice, setActionNotice } = useCRM();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // STRICT LOGIN GATE: If not logged in, render LoginView!
@@ -81,6 +81,24 @@ const MainAppContent: React.FC = () => {
       <QuickAddLeadModal />
       <LeadDetailModal />
       <GlobalSearchModal />
+
+      {/* System Action Notice Modal */}
+      {actionNotice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 border border-slate-200">
+            <h3 className="text-base font-bold text-slate-900">System Notice</h3>
+            <p className="text-xs text-slate-700 leading-relaxed">{actionNotice}</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setActionNotice(null)}
+                className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

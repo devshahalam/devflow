@@ -364,7 +364,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Lead CRUD
   const addLead = (leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt' | 'paymentStatus'>) => {
-    const newId = `LEAD-${String(leads.length + 1).padStart(2, '0')}`;
+    const newId = `LEAD-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const newLead: Lead = {
       ...leadData,
       id: newId,
@@ -392,20 +392,21 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setActionNotice('This lead was converted into a Client account. Please manage relationship from Clients.');
       return false;
     }
+    setRawLeads((prev) => prev.filter((l) => l.id !== id));
+    setFollowUps((prev) => prev.filter((f) => f.leadId !== id));
+    setCommunications((prev) => prev.filter((c) => c.leadId !== id));
+
     deleteDoc(doc(db, 'leads', id));
     followUps.filter((f) => f.leadId === id).forEach((f) => deleteDoc(doc(db, 'followUps', f.id)));
     communications.filter((c) => c.leadId === id).forEach((c) => deleteDoc(doc(db, 'communications', c.id)));
     return true;
   };
 
-  const convertLeadToClient = (
-    leadId: string,
-    initialProjectData?: { projectName?: string; projectValue?: number; deadline?: string }
-  ) => {
-    const lead = leads.find((l) => l.id === leadId);
+  const convertLeadToClient = (leadId: string) => {
+    const lead = leads.find((l) => l.id === leadId) || allLeads.find((l) => l.id === leadId);
     if (!lead) throw new Error('Lead not found');
 
-    const newClientId = `CLI-${String(clients.length + 1).padStart(2, '0')}`;
+    const newClientId = `CLI-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const leadCurrency = lead.currency || 'USD';
 
     const newClient: Client = {
@@ -423,42 +424,17 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setDoc(doc(db, 'clients', newClientId), newClient);
 
-    let newProj: Project | undefined;
-    if (lead.serviceId) {
-      const projId = `PRJ-${100 + projects.length + 1}`;
-      newProj = {
-        id: projId,
-        clientId: newClientId,
-        clientName: newClient.businessName,
-        leadId: lead.id,
-        projectName: initialProjectData?.projectName || `${lead.businessName} - ${lead.serviceName}`,
-        serviceId: lead.serviceId,
-        serviceName: lead.serviceName,
-        projectValue: initialProjectData?.projectValue || lead.dealValue || 800,
-        currency: leadCurrency,
-        startDate: TODAY_DATE,
-        deadline: initialProjectData?.deadline || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
-        status: 'In Progress',
-        notes: `Converted from lead ${lead.id}`,
-        assignedTo: 'USR-01',
-        createdAt: new Date().toISOString(),
-      };
-      setDoc(doc(db, 'projects', projId), newProj);
-    }
-
     updateLead(leadId, {
       status: 'Won',
       clientId: newClientId,
-      dealValue: initialProjectData?.projectValue || lead.dealValue,
-      currency: leadCurrency,
     });
 
-    return { client: newClient, project: newProj };
+    return { client: newClient };
   };
 
   // Client CRUD
   const addClient = (clientData: Omit<Client, 'id' | 'createdAt'>) => {
-    const newId = `CLI-${String(clients.length + 1).padStart(2, '0')}`;
+    const newId = `CLI-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const newClient: Client = {
       ...clientData,
       id: newId,
@@ -477,17 +453,26 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteClient = (id: string): boolean => {
-    // Cascade delete all client payments, projects, proposals
-    payments.filter((p) => p.clientId === id).forEach((p) => deleteDoc(doc(db, 'payments', p.id)));
-    projects.filter((p) => p.clientId === id).forEach((p) => deleteDoc(doc(db, 'projects', p.id)));
+    const clientProjects = projects.filter((p) => p.clientId === id);
+    const clientPayments = payments.filter((p) => p.clientId === id);
+
+    if (clientProjects.length > 0 || clientPayments.length > 0) {
+      setActionNotice(
+        `Cannot delete this client. This client has active projects (${clientProjects.length}) or payment records (${clientPayments.length}). Please delete all associated projects and payment history records first.`
+      );
+      return false;
+    }
+
+    setClients((prev) => prev.filter((c) => c.id !== id));
     proposals.filter((p) => p.clientId === id).forEach((p) => deleteDoc(doc(db, 'proposals', p.id)));
     deleteDoc(doc(db, 'clients', id));
+    setActionNotice('Client deleted successfully.');
     return true;
   };
 
   // Project CRUD
   const addProject = (projectData: Omit<Project, 'id' | 'createdAt'>) => {
-    const newId = `PRJ-${100 + projects.length + 1}`;
+    const newId = `PRJ-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const newProject: Project = {
       ...projectData,
       id: newId,
@@ -506,6 +491,9 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteProject = (id: string): boolean => {
+    setProjects((prev) => prev.filter((p) => p.id !== id));
+    setPayments((prev) => prev.filter((p) => p.projectId !== id));
+
     // Cascade delete project payments
     payments.filter((p) => p.projectId === id).forEach((p) => deleteDoc(doc(db, 'payments', p.id)));
     deleteDoc(doc(db, 'projects', id));
@@ -514,7 +502,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Payment CRUD
   const addPayment = (paymentData: Omit<Payment, 'id' | 'createdAt'>) => {
-    const newId = `PAY-${String(payments.length + 1).padStart(2, '0')}`;
+    const newId = `PAY-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const newPayment: Payment = {
       ...paymentData,
       id: newId,
@@ -532,13 +520,14 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deletePayment = (id: string): boolean => {
+    setPayments((prev) => prev.filter((p) => p.id !== id));
     deleteDoc(doc(db, 'payments', id));
     return true;
   };
 
   // Proposal CRUD
   const addProposal = (proposalData: Omit<Proposal, 'id' | 'createdAt'>) => {
-    const newId = `PROP-${String(proposals.length + 1).padStart(2, '0')}`;
+    const newId = `PROP-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const newProp: Proposal = {
       ...proposalData,
       id: newId,
@@ -556,13 +545,14 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteProposal = (id: string): boolean => {
+    setProposals((prev) => prev.filter((p) => p.id !== id));
     deleteDoc(doc(db, 'proposals', id));
     return true;
   };
 
   // Communication CRUD
   const addCommunication = (commData: Omit<Communication, 'id' | 'createdAt'>) => {
-    const newId = `COM-${String(communications.length + 1).padStart(2, '0')}`;
+    const newId = `COM-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const newComm: Communication = {
       ...commData,
       id: newId,
@@ -580,6 +570,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteCommunication = (id: string): boolean => {
+    setCommunications((prev) => prev.filter((c) => c.id !== id));
     deleteDoc(doc(db, 'communications', id));
     return true;
   };
@@ -588,7 +579,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addFollowUp = (
     followUpData: Omit<FollowUp, 'id' | 'createdAt' | 'completed' | 'completedAt'>
   ) => {
-    const newId = `FLP-${String(followUps.length + 1).padStart(2, '0')}`;
+    const newId = `FLP-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const newFlp: FollowUp = {
       ...followUpData,
       id: newId,
@@ -615,12 +606,13 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteFollowUp = (id: string) => {
+    setFollowUps((prev) => prev.filter((f) => f.id !== id));
     deleteDoc(doc(db, 'followUps', id));
   };
 
   // Service CRUD
   const addService = (serviceData: Omit<Service, 'id'>) => {
-    const newId = `SRV-${String(services.length + 1).padStart(2, '0')}`;
+    const newId = `SRV-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const newSrv: Service = { ...serviceData, id: newId };
     setDoc(doc(db, 'services', newId), newSrv);
     return newSrv;

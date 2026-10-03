@@ -264,23 +264,15 @@ export const ProjectsView: React.FC = () => {
                     <Pencil className="h-4 w-4" />
                   </button>
 
-                  {currentUser?.role === 'Owner' && (
-                    <button
-                      onClick={() => {
-                        if (
-                          confirm(
-                            `Delete project "${proj.projectName}"? Note: If this project has payment records, payments must be deleted first.`
-                          )
-                        ) {
-                          deleteProject(proj.id);
-                        }
-                      }}
-                      className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                      title="Delete Project (Owner only)"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
+                  <button
+                    onClick={() => {
+                      deleteProject(proj.id);
+                    }}
+                    className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                    title="Delete Project"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
 

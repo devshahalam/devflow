@@ -464,27 +464,19 @@ export const ClientsView: React.FC = () => {
                   <span>+ Add Project</span>
                 </button>
 
-                {currentUser?.role === 'Owner' && (
                   <button
                     onClick={() => {
-                      if (
-                        confirm(
-                          `Delete client "${activeClient.businessName}"? Note: In accordance with ERP rules, clients with active projects or payment records cannot be deleted directly.`
-                        )
-                      ) {
-                        const success = deleteClient(activeClient.id);
-                        if (success) {
-                          setSelectedClientId(null);
-                        }
+                      const success = deleteClient(activeClient.id);
+                      if (success) {
+                        setSelectedClientId(null);
                       }
                     }}
                     className="flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition-colors"
-                    title="Delete Client (Owner only)"
+                    title="Delete Client"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Delete Client</span>
                   </button>
-                )}
 
                 <button
                   onClick={() => setSelectedClientId(null)}
@@ -591,23 +583,15 @@ export const ClientsView: React.FC = () => {
                                 {fin.status}
                               </span>
 
-                              {currentUser?.role === 'Owner' && (
-                                <button
-                                  onClick={() => {
-                                    if (
-                                      confirm(
-                                        `Delete project "${p.projectName}"? Note: In ERP accounting, if this project has payment records, payment details must be removed first.`
-                                      )
-                                    ) {
-                                      deleteProject(p.id);
-                                    }
-                                  }}
-                                  className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                                  title="Delete Project (Owner only)"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </button>
-                              )}
+                              <button
+                                onClick={() => {
+                                  deleteProject(p.id);
+                                }}
+                                className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                title="Delete Project"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
                             </div>
                           </div>
 
@@ -673,26 +657,15 @@ export const ClientsView: React.FC = () => {
                           <span className="font-bold text-emerald-600 text-sm">
                             +{formatCurrency(pay.amount, pay.currency)}
                           </span>
-                          {currentUser?.role === 'Owner' && (
                             <button
                               onClick={() => {
-                                if (
-                                  confirm(
-                                    `Delete payment receipt ${pay.invoiceNumber} (${formatCurrency(
-                                      pay.amount,
-                                      pay.currency
-                                    )})?`
-                                  )
-                                ) {
-                                  deletePayment(pay.id);
-                                }
+                                deletePayment(pay.id);
                               }}
                               className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                              title="Delete Payment (Owner only)"
+                              title="Delete Payment"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
-                          )}
                         </div>
                       </div>
                     ))}
