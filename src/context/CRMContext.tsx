@@ -198,7 +198,12 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   // Entities state
-  const [leads, setLeads] = useState<Lead[]>(initialLeads);
+  const [rawLeads, setRawLeads] = useState<Lead[]>(initialLeads);
+  const leads = useMemo(() => {
+    return rawLeads.filter((l) => !l.clientId);
+  }, [rawLeads]);
+  const allLeads = rawLeads;
+
   const [clients, setClients] = useState<Client[]>(initialClients);
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [payments, setPayments] = useState<Payment[]>(initialPayments);
@@ -213,7 +218,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Firestore Real-time Sync (onSnapshot) across devices
   useEffect(() => {
     const unsubLeads = onSnapshot(collection(db, 'leads'), (snapshot) => {
-      setLeads(snapshot.empty ? [] : snapshot.docs.map((d) => d.data() as Lead));
+      setRawLeads(snapshot.empty ? [] : snapshot.docs.map((d) => d.data() as Lead));
     });
 
     const unsubClients = onSnapshot(collection(db, 'clients'), (snapshot) => {
@@ -809,7 +814,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         logout,
         login,
         leads,
-        allLeads: leads,
+        allLeads,
         clients,
         projects,
         payments,

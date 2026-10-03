@@ -18,6 +18,7 @@ import {
   Twitter,
   Receipt,
   Trash2,
+  Pencil,
 } from 'lucide-react';
 import { useCRM } from '../../context/CRMContext';
 import { Client, Currency, Project, ProjectStatus } from '../../types/crm';
@@ -62,6 +63,62 @@ export const ClientsView: React.FC = () => {
   const [city, setCity] = useState('');
   const [newClientCurrency, setNewClientCurrency] = useState<Currency>('USD');
   const [notes, setNotes] = useState('');
+
+  // Edit Client Modal state & handlers
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [editBusinessName, setEditBusinessName] = useState('');
+  const [editContactPerson, setEditContactPerson] = useState('');
+  const [editBusinessCategory, setEditBusinessCategory] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editWhatsapp, setEditWhatsapp] = useState('');
+  const [editWebsite, setEditWebsite] = useState('');
+  const [editFacebook, setEditFacebook] = useState('');
+  const [editInstagram, setEditInstagram] = useState('');
+  const [editTwitter, setEditTwitter] = useState('');
+  const [editCountry, setEditCountry] = useState('United States');
+  const [editCity, setEditCity] = useState('');
+  const [editCurrency, setEditCurrency] = useState<Currency>('USD');
+  const [editNotes, setEditNotes] = useState('');
+
+  const handleOpenEditClient = (client: Client) => {
+    setEditingClient(client);
+    setEditBusinessName(client.businessName);
+    setEditContactPerson(client.contactPerson);
+    setEditBusinessCategory(client.businessCategory || 'General Business');
+    setEditEmail(client.email || '');
+    setEditWhatsapp(client.whatsapp || '');
+    setEditWebsite(client.website || '');
+    setEditFacebook(client.facebook || '');
+    setEditInstagram(client.instagram || '');
+    setEditTwitter(client.twitter || '');
+    setEditCountry(client.country || 'United States');
+    setEditCity(client.city || '');
+    setEditCurrency(client.currency || 'USD');
+    setEditNotes(client.notes || '');
+  };
+
+  const handleEditClientSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingClient || !editBusinessName.trim()) return;
+
+    updateClient(editingClient.id, {
+      businessName: editBusinessName.trim(),
+      contactPerson: editContactPerson.trim(),
+      businessCategory: editBusinessCategory.trim(),
+      email: editEmail.trim(),
+      whatsapp: editWhatsapp.trim(),
+      website: editWebsite.trim(),
+      facebook: editFacebook.trim(),
+      instagram: editInstagram.trim(),
+      twitter: editTwitter.trim(),
+      country: editCountry.trim(),
+      city: editCity.trim(),
+      currency: editCurrency,
+      notes: editNotes.trim(),
+    });
+
+    setEditingClient(null);
+  };
 
   // Add Project for Specific Client Modal
   const [clientForNewProject, setClientForNewProject] = useState<Client | null>(null);
@@ -271,9 +328,18 @@ export const ClientsView: React.FC = () => {
                     </div>
                   </div>
 
-                  <span className="rounded-md bg-blue-50 border border-blue-100 text-blue-700 px-2 py-0.5 text-[10px] font-bold">
-                    {clientProjects.length} Projects
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="rounded-md bg-blue-50 border border-blue-100 text-blue-700 px-2 py-0.5 text-[10px] font-bold">
+                      {clientProjects.length} Projects
+                    </span>
+                    <button
+                      onClick={() => handleOpenEditClient(client)}
+                      className="p-1 rounded text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                      title="Edit Client Info"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Social & Contact Icons */}
@@ -1013,6 +1079,135 @@ export const ClientsView: React.FC = () => {
                   className="rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700"
                 >
                   Create Client
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Client Modal */}
+      {editingClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"
+            onClick={() => setEditingClient(null)}
+          />
+
+          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-bold text-slate-900">
+                Edit Client: {editingClient.id}
+              </h3>
+              <button
+                onClick={() => setEditingClient(null)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditClientSubmit} className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700">
+                  Business Name <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-900"
+                  value={editBusinessName}
+                  onChange={(e) => setEditBusinessName(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700">Contact Person</label>
+                <input
+                  type="text"
+                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-900"
+                  value={editContactPerson}
+                  onChange={(e) => setEditContactPerson(e.target.value)}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700">WhatsApp</label>
+                  <input
+                    type="text"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-900"
+                    value={editWhatsapp}
+                    onChange={(e) => setEditWhatsapp(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700">Email</label>
+                  <input
+                    type="email"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-900"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700">Country</label>
+                  <input
+                    type="text"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-900"
+                    value={editCountry}
+                    onChange={(e) => setEditCountry(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700">City</label>
+                  <input
+                    type="text"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-900"
+                    value={editCity}
+                    onChange={(e) => setEditCity(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700">Currency</label>
+                <select
+                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 font-bold"
+                  value={editCurrency}
+                  onChange={(e) => setEditCurrency(e.target.value as Currency)}
+                >
+                  <option value="USD">USD ($) - International</option>
+                  <option value="BDT">BDT (৳) - Bangladesh</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700">Website</label>
+                <input
+                  type="text"
+                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-900"
+                  value={editWebsite}
+                  onChange={(e) => setEditWebsite(e.target.value)}
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingClient(null)}
+                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700"
+                >
+                  Save Changes
                 </button>
               </div>
             </form>

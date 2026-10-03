@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Layers, Plus, Edit2, Trash2, DollarSign, X, Check, ArrowRight } from 'lucide-react';
 import { useCRM } from '../../context/CRMContext';
-import { Service } from '../../types/crm';
+import { Currency, Service } from '../../types/crm';
 
 export const ServicesView: React.FC = () => {
   const {
@@ -22,6 +22,7 @@ export const ServicesView: React.FC = () => {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('Full Website');
   const [defaultPrice, setDefaultPrice] = useState<number>(850);
+  const [currency, setCurrency] = useState<Currency>('USD');
   const [description, setDescription] = useState('');
 
   const handleOpenAdd = () => {
@@ -29,6 +30,7 @@ export const ServicesView: React.FC = () => {
     setName('');
     setCategory('Full Website');
     setDefaultPrice(850);
+    setCurrency('USD');
     setDescription('');
     setIsModalOpen(true);
   };
@@ -38,6 +40,7 @@ export const ServicesView: React.FC = () => {
     setName(srv.name);
     setCategory(srv.category);
     setDefaultPrice(srv.defaultPrice);
+    setCurrency(srv.currency || 'USD');
     setDescription(srv.description);
     setIsModalOpen(true);
   };
@@ -51,6 +54,7 @@ export const ServicesView: React.FC = () => {
         name: name.trim(),
         category: category.trim(),
         defaultPrice: Number(defaultPrice) || 0,
+        currency,
         description: description.trim(),
       });
     } else {
@@ -58,6 +62,7 @@ export const ServicesView: React.FC = () => {
         name: name.trim(),
         category: category.trim(),
         defaultPrice: Number(defaultPrice) || 0,
+        currency,
         description: description.trim(),
       });
     }
@@ -145,7 +150,7 @@ export const ServicesView: React.FC = () => {
                       Starting Rate:
                     </span>
                     <span className="text-lg font-bold text-slate-900">
-                      {formatCurrency(srv.defaultPrice)}
+                      {formatCurrency(srv.defaultPrice, srv.currency || 'USD')}
                     </span>
                   </div>
                   <div className="text-right">
@@ -206,8 +211,8 @@ export const ServicesView: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="col-span-2">
                   <label className="block text-xs font-semibold text-slate-700">Category</label>
                   <input
                     type="text"
@@ -220,18 +225,30 @@ export const ServicesView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700">
-                    Default Price ({profile.defaultCurrency || 'USD'})
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    required
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-900"
-                    value={defaultPrice}
-                    onChange={(e) => setDefaultPrice(Number(e.target.value))}
-                  />
+                  <label className="block text-xs font-semibold text-slate-700">Currency</label>
+                  <select
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs text-slate-900 font-bold"
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value as Currency)}
+                  >
+                    <option value="USD">USD ($)</option>
+                    <option value="BDT">BDT (৳)</option>
+                  </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700">
+                  Default Price ({currency === 'BDT' ? '৳ BDT' : '$ USD'})
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  required
+                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-900 font-bold"
+                  value={defaultPrice}
+                  onChange={(e) => setDefaultPrice(Number(e.target.value))}
+                />
               </div>
 
               <div>

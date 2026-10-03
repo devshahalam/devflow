@@ -209,41 +209,49 @@ export const DashboardView: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs">
-            <div className="text-xs font-medium text-slate-500">Total Invoiced (USD)</div>
-            <div className="mt-1.5 text-2xl font-bold text-slate-900">
-              {formatCurrency(kpis.totalSalesUSD, 'USD')}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* USD Card */}
+          <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">USD Financials ($)</span>
+              <span className="rounded bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5">International</span>
             </div>
-            <div className="mt-1 text-[11px] text-emerald-600 font-medium">
-              Received: {formatCurrency(kpis.amountReceivedUSD, 'USD')}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-4 shadow-2xs">
-            <div className="text-xs font-semibold text-amber-900">Pending Receivables (USD)</div>
-            <div className="mt-1.5 text-2xl font-bold text-amber-600">
-              {formatCurrency(kpis.amountPendingUSD, 'USD')}
-            </div>
-            <div className="mt-1 text-[11px] text-amber-700">International projects</div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs">
-            <div className="text-xs font-medium text-slate-500">Total Invoiced (BDT)</div>
-            <div className="mt-1.5 text-2xl font-bold text-slate-900">
-              {formatCurrency(kpis.totalSalesBDT, 'BDT')}
-            </div>
-            <div className="mt-1 text-[11px] text-emerald-600 font-medium">
-              Received: {formatCurrency(kpis.amountReceivedBDT, 'BDT')}
+            <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-100">
+              <div>
+                <span className="text-[10px] uppercase font-semibold text-slate-400 block">Total Invoiced</span>
+                <span className="text-base font-bold text-slate-900">{formatCurrency(kpis.totalSalesUSD, 'USD')}</span>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-semibold text-slate-400 block">Received</span>
+                <span className="text-base font-bold text-emerald-600">{formatCurrency(kpis.amountReceivedUSD, 'USD')}</span>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-semibold text-slate-400 block">Pending</span>
+                <span className="text-base font-bold text-amber-600">{formatCurrency(kpis.amountPendingUSD, 'USD')}</span>
+              </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-4 shadow-2xs">
-            <div className="text-xs font-semibold text-amber-900">Pending Receivables (BDT)</div>
-            <div className="mt-1.5 text-2xl font-bold text-amber-600">
-              {formatCurrency(kpis.amountPendingBDT, 'BDT')}
+          {/* BDT Card */}
+          <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">BDT Financials (৳)</span>
+              <span className="rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5">Bangladesh</span>
             </div>
-            <div className="mt-1 text-[11px] text-amber-700">Bangladesh clients</div>
+            <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-100">
+              <div>
+                <span className="text-[10px] uppercase font-semibold text-slate-400 block">Total Invoiced</span>
+                <span className="text-base font-bold text-slate-900">{formatCurrency(kpis.totalSalesBDT, 'BDT')}</span>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-semibold text-slate-400 block">Received</span>
+                <span className="text-base font-bold text-emerald-600">{formatCurrency(kpis.amountReceivedBDT, 'BDT')}</span>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-semibold text-slate-400 block">Pending</span>
+                <span className="text-base font-bold text-amber-600">{formatCurrency(kpis.amountPendingBDT, 'BDT')}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

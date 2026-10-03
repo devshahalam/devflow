@@ -13,6 +13,7 @@ import {
   User,
   X,
   Trash2,
+  Pencil,
 } from 'lucide-react';
 import { useCRM } from '../../context/CRMContext';
 import { Currency, Project, ProjectStatus } from '../../types/crm';
@@ -51,6 +52,38 @@ export const ProjectsView: React.FC = () => {
   });
   const [status, setStatus] = useState<ProjectStatus>('In Progress');
   const [notes, setNotes] = useState('');
+
+  // Edit project modal state
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [editProjectName, setEditProjectName] = useState('');
+  const [editProjectValue, setEditProjectValue] = useState<number>(1000);
+  const [editDeadline, setEditDeadline] = useState('');
+  const [editStatus, setEditStatus] = useState<ProjectStatus>('In Progress');
+  const [editNotes, setEditNotes] = useState('');
+
+  const handleOpenEdit = (proj: Project) => {
+    setEditingProject(proj);
+    setEditProjectName(proj.projectName);
+    setEditProjectValue(proj.projectValue);
+    setEditDeadline(proj.deadline);
+    setEditStatus(proj.status);
+    setEditNotes(proj.notes || '');
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProject || !editProjectName.trim()) return;
+
+    updateProject(editingProject.id, {
+      projectName: editProjectName.trim(),
+      projectValue: Number(editProjectValue) || 0,
+      deadline: editDeadline,
+      status: editStatus,
+      notes: editNotes.trim(),
+    });
+
+    setEditingProject(null);
+  };
 
   const selectedClient = clients.find((c) => c.id === selectedClientId);
   const clientCurrency: Currency = selectedClient?.currency || 'USD';
@@ -222,6 +255,14 @@ export const ProjectsView: React.FC = () => {
                     <option value="Completed">Completed</option>
                     <option value="Cancelled">Cancelled</option>
                   </select>
+
+                  <button
+                    onClick={() => handleOpenEdit(proj)}
+                    className="p-1 rounded text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                    title="Edit Project Scope & Value"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
 
                   {currentUser?.role === 'Owner' && (
                     <button
@@ -473,6 +514,118 @@ export const ProjectsView: React.FC = () => {
                   className="rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700"
                 >
                   Create Project
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Project Modal */}
+      {editingProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"
+            onClick={() => setEditingProject(null)}
+          />
+
+          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-bold text-slate-900">
+                Edit Project: {editingProject.id}
+              </h3>
+              <button
+                onClick={() => setEditingProject(null)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700">
+                  Project Title / Scope <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-900"
+                  value={editProjectName}
+                  onChange={(e) => setEditProjectName(e.target.value)}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Project Value ({editingProject.currency === 'BDT' ? '৳' : '$'})
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-900 font-bold"
+                    value={editProjectValue}
+                    onChange={(e) => setEditProjectValue(Number(e.target.value))}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Target Deadline
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-900"
+                    value={editDeadline}
+                    onChange={(e) => setEditDeadline(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700">Status</label>
+                <select
+                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900"
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value as ProjectStatus)}
+                >
+                  <option value="Not Started">Not Started</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Waiting for Client">Waiting for Client</option>
+                  <option value="Review">Review</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700">
+                  Project Notes & Milestones
+                </label>
+                <textarea
+                  rows={2}
+                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-900"
+                  value={editNotes}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingProject(null)}
+                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700"
+                >
+                  Save Changes
                 </button>
               </div>
             </form>

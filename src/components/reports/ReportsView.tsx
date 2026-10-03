@@ -27,6 +27,7 @@ export const ReportsView: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'All' | 'ThisMonth' | 'Last30Days'>('All');
   const [sourceFilter, setSourceFilter] = useState<string>('All');
   const [serviceFilter, setServiceFilter] = useState<string>('All');
+  const [selectedMonthFilter, setSelectedMonthFilter] = useState<string>('All');
 
   // Filtered Leads according to report filters
   const filteredLeads = useMemo(() => {
@@ -43,15 +44,74 @@ export const ReportsView: React.FC = () => {
   const winRate =
     totalWon + totalLost > 0 ? Math.round((totalWon / (totalWon + totalLost)) * 100) : 100;
 
-  // Monthly breakdown
-  const monthlyData = [
-    { month: 'Jul 2026', leads: 4, sales: 1800, received: 1800 },
-    { month: 'Aug 2026', leads: 7, sales: 2900, received: 2900 },
-    { month: 'Sep 2026', leads: 11, sales: 4250, received: 2700 },
-    { month: 'Oct 2026 (MTD)', leads: 3, sales: 1200, received: 600 },
-  ];
+  // Dynamic Monthly Sales & Income Trends based on actual projects and payments
+  const monthlyData = useMemo(() => {
+    const monthMap: Record<string, { label: string; salesUSD: number; receivedUSD: number; salesBDT: number; receivedBDT: number; leadsCount: number }> = {};
 
-  const maxSales = Math.max(...monthlyData.map((m) => m.sales), 1);
+    const getMonthKey = (dateStr: string) => {
+      if (!dateStr) return '2026-10';
+      return dateStr.slice(0, 7);
+    };
+
+    const formatMonthLabel = (yearMonth: string) => {
+      try {
+        const [y, m] = yearMonth.split('-');
+        const date = new Date(Number(y), Number(m) - 1, 1);
+        return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      } catch {
+        return yearMonth;
+      }
+    };
+
+    projects.forEach((p) => {
+      const mKey = getMonthKey(p.createdAt || p.startDate);
+      if (!monthMap[mKey]) {
+        monthMap[mKey] = { label: formatMonthLabel(mKey), salesUSD: 0, receivedUSD: 0, salesBDT: 0, receivedBDT: 0, leadsCount: 0 };
+      }
+      if (p.currency === 'BDT') {
+        monthMap[mKey].salesBDT += p.projectValue;
+      } else {
+        monthMap[mKey].salesUSD += p.projectValue;
+      }
+    });
+
+    payments.forEach((pay) => {
+      const mKey = getMonthKey(pay.paymentDate || pay.createdAt);
+      if (!monthMap[mKey]) {
+        monthMap[mKey] = { label: formatMonthLabel(mKey), salesUSD: 0, receivedUSD: 0, salesBDT: 0, receivedBDT: 0, leadsCount: 0 };
+      }
+      if (pay.currency === 'BDT') {
+        monthMap[mKey].receivedBDT += pay.amount;
+      } else {
+        monthMap[mKey].receivedUSD += pay.amount;
+      }
+    });
+
+    leads.forEach((l) => {
+      const mKey = getMonthKey(l.createdAt);
+      if (monthMap[mKey]) {
+        monthMap[mKey].leadsCount += 1;
+      } else {
+        monthMap[mKey] = { label: formatMonthLabel(mKey), salesUSD: 0, receivedUSD: 0, salesBDT: 0, receivedBDT: 0, leadsCount: 1 };
+      }
+    });
+
+    const sortedKeys = Object.keys(monthMap).sort();
+    if (sortedKeys.length === 0) {
+      return [{ label: 'Current Month', salesUSD: 0, receivedUSD: 0, salesBDT: 0, receivedBDT: 0, leadsCount: 0 }];
+    }
+
+    return sortedKeys.map((k) => monthMap[k]);
+  }, [projects, payments, leads]);
+
+  const availableMonths = useMemo(() => {
+    return monthlyData.map((m) => m.label);
+  }, [monthlyData]);
+
+  const filteredMonthlyData = useMemo(() => {
+    if (selectedMonthFilter === 'All') return monthlyData;
+    return monthlyData.filter((m) => m.label === selectedMonthFilter);
+  }, [monthlyData, selectedMonthFilter]);
 
   // Revenue by Service breakdown
   const serviceRevenue = services.map((s) => {
@@ -163,51 +223,83 @@ export const ReportsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Visual Chart 1: Monthly Growth Trends */}
+      {/* Visual Chart 1: Monthly Growth Trends (Row-wise with Month Dropdown Filter) */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-3">
           <div>
             <h3 className="text-sm font-bold text-slate-900">Monthly Sales & Income Trends</h3>
             <p className="text-xs text-slate-500">
-              Contract value booked vs cash collections received
+              Contract value booked vs cash collections received per month (Row-wise view)
             </p>
           </div>
-          <span className="text-xs font-semibold text-slate-600">Last 4 Months</span>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-500 font-medium">Filter Month:</span>
+            <select
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 font-semibold"
+              value={selectedMonthFilter}
+              onChange={(e) => setSelectedMonthFilter(e.target.value)}
+            >
+              <option value="All">All Months (Default)</option>
+              {availableMonths.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-2">
-          {monthlyData.map((m) => {
-            const salesHeight = Math.round((m.sales / maxSales) * 100);
-            const recHeight = Math.round((m.received / maxSales) * 100);
+        <div className="space-y-3 pt-1">
+          {filteredMonthlyData.map((m) => {
+            const usdPending = Math.max(0, m.salesUSD - m.receivedUSD);
+            const bdtPending = Math.max(0, m.salesBDT - m.receivedBDT);
+
             return (
               <div
-                key={m.month}
-                className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 space-y-3"
+                key={m.label}
+                className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-300 transition-colors"
               >
-                <div className="text-xs font-bold text-slate-900">{m.month}</div>
-                <div className="text-xs text-slate-500">{m.leads} new inquiries</div>
+                {/* Month & Leads Info */}
+                <div className="flex items-center gap-3 min-w-[160px]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700 font-bold text-xs">
+                    📅
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-slate-900">{m.label}</div>
+                    <div className="text-xs text-slate-500 font-medium">{m.leadsCount} new leads</div>
+                  </div>
+                </div>
 
-                <div className="space-y-1.5 pt-2 border-t border-slate-200/60">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Sales:</span>
-                    <strong className="text-slate-900">{formatCurrency(m.sales)}</strong>
+                {/* USD Financials Row Item */}
+                <div className="flex-1 rounded-lg bg-slate-50 p-3 border border-slate-100 grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">USD Invoiced</span>
+                    <strong className="text-xs font-bold text-slate-900">{formatCurrency(m.salesUSD, 'USD')}</strong>
                   </div>
-                  <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-600 rounded-full"
-                      style={{ width: `${salesHeight}%` }}
-                    />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">USD Received</span>
+                    <strong className="text-xs font-bold text-emerald-600">{formatCurrency(m.receivedUSD, 'USD')}</strong>
                   </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">USD Pending</span>
+                    <strong className="text-xs font-bold text-amber-600">{formatCurrency(usdPending, 'USD')}</strong>
+                  </div>
+                </div>
 
-                  <div className="flex justify-between text-xs pt-1">
-                    <span className="text-slate-500">Received:</span>
-                    <strong className="text-emerald-600">{formatCurrency(m.received)}</strong>
+                {/* BDT Financials Row Item */}
+                <div className="flex-1 rounded-lg bg-slate-50 p-3 border border-slate-100 grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">BDT Invoiced</span>
+                    <strong className="text-xs font-bold text-slate-900">{formatCurrency(m.salesBDT, 'BDT')}</strong>
                   </div>
-                  <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500 rounded-full"
-                      style={{ width: `${recHeight}%` }}
-                    />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">BDT Received</span>
+                    <strong className="text-xs font-bold text-emerald-600">{formatCurrency(m.receivedBDT, 'BDT')}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">BDT Pending</span>
+                    <strong className="text-xs font-bold text-amber-600">{formatCurrency(bdtPending, 'BDT')}</strong>
                   </div>
                 </div>
               </div>
